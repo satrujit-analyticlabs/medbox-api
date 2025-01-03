@@ -9,9 +9,17 @@ db.serialize(() => {
   db.run(`
     CREATE TABLE IF NOT EXISTS devices (
       deviceId TEXT PRIMARY KEY,
-      status INTEGER DEFAULT 1
+      status INTEGER DEFAULT 1,
+      latitude TEXT DEFAULT NULL,
+      longitude TEXT DEFAULT NULL
     )
-  `);
+  `, (err) => {
+    if (err) {
+      console.error('Error creating table:', err.message);
+    } else {
+      console.log('Table created or already exists.');
+    }
+  });
 });
 
 export default db;
