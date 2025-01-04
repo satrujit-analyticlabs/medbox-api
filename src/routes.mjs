@@ -61,7 +61,7 @@ router.get('/devices', (req, res) => {
 });
 
 // Update device status and/or location (latitude, longitude)
-router.patch('/devices/:deviceId', (req, res) => {
+router.put('/devices/:deviceId', (req, res) => {
   const { deviceId } = req.params;
   const { status, latitude, longitude } = req.body;
 
