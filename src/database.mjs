@@ -11,7 +11,8 @@ db.serialize(() => {
       deviceId TEXT PRIMARY KEY,
       status INTEGER DEFAULT 1,
       latitude TEXT DEFAULT NULL,
-      longitude TEXT DEFAULT NULL
+      longitude TEXT DEFAULT NULL,
+      validData INTEGER DEFAULT 0
     )
   `, (err) => {
     if (err) {
