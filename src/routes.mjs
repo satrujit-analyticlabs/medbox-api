@@ -17,11 +17,16 @@ router.post('/devices', (req, res) => {
     return res.status(400).json({ error: 'Status must be 0 or 1' });
   }
 
+  // Validate validData as an integer if provided
+  if (validData !== undefined && !Number.isInteger(validData)) {
+    return res.status(400).json({ error: 'validData must be an integer' });
+  }
+
   // Set default values for optional fields
   const deviceStatus = validStatus ? status : 0; // Default status is 1 if not provided or invalid
   const deviceLatitude = latitude !== undefined ? latitude : null; // Default is null if not provided
   const deviceLongitude = longitude !== undefined ? longitude : null; // Default is null if not provided
-  const deviceValidData = validData !== undefined ? validData : null;
+  const deviceValidData = validData !== undefined ? validData : 0;
 
   // Check if the deviceId exists in the database
   db.get('SELECT * FROM devices WHERE deviceId = ?', [deviceId], (err, row) => {
