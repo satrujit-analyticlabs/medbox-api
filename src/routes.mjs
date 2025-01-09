@@ -3,6 +3,37 @@ const router = Router();
 import db from './database.mjs';
 
 // Register a new device with optional location and status
+// router.post('/devices', (req, res) => {
+//   const { deviceId, status, latitude, longitude } = req.body;
+//
+//   // Validate the presence of deviceId
+//   if (!deviceId) {
+//     return res.status(400).json({ error: 'deviceId is required' });
+//   }
+//
+//   // Validate that status is 0 or 1
+//   const validStatus = status === 0 || status === 1;
+//   if (status !== undefined && !validStatus) {
+//     return res.status(400).json({ error: 'Status must be 0 or 1' });
+//   }
+//
+//   // Set default values for optional fields
+//   const deviceStatus = validStatus ? status : 1; // Default status is 1 if not provided or invalid
+//   const deviceLatitude = latitude !== undefined ? latitude : null; // Default is null if not provided
+//   const deviceLongitude = longitude !== undefined ? longitude : null; // Default is null if not provided
+//
+//   // Insert or update the device in the database (INSERT OR REPLACE)
+//   db.run(
+//     'INSERT OR REPLACE INTO devices (deviceId, status, latitude, longitude) VALUES (?, ?, ?, ?)',
+//     [deviceId, deviceStatus, deviceLatitude, deviceLongitude],
+//     (err) => {
+//       if (err) {
+//         return res.status(400).json({ error: 'Device already exists or invalid' });
+//       }
+//       res.status(201).json({ message: 'Device registered successfully' });
+//     }
+//   );
+// });
 router.post('/devices', (req, res) => {
   const { deviceId, status, latitude, longitude } = req.body;
 
@@ -22,18 +53,59 @@ router.post('/devices', (req, res) => {
   const deviceLatitude = latitude !== undefined ? latitude : null; // Default is null if not provided
   const deviceLongitude = longitude !== undefined ? longitude : null; // Default is null if not provided
 
-  // Insert or update the device in the database (INSERT OR REPLACE)
-  db.run(
-    'INSERT OR REPLACE INTO devices (deviceId, status, latitude, longitude) VALUES (?, ?, ?, ?)',
-    [deviceId, deviceStatus, deviceLatitude, deviceLongitude],
-    (err) => {
-      if (err) {
-        return res.status(400).json({ error: 'Device already exists or invalid' });
-      }
-      res.status(201).json({ message: 'Device registered successfully' });
+  // Check if the deviceId exists in the database
+  db.get('SELECT * FROM devices WHERE deviceId = ?', [deviceId], (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: 'Database error' });
     }
-  );
+
+    if (row) {
+      // If deviceId exists, update the record
+      let updateQuery = 'UPDATE devices SET ';
+      const params = [];
+
+      if (status !== undefined) {
+        updateQuery += 'status = ?, ';
+        params.push(deviceStatus);
+      }
+
+      if (latitude !== undefined) {
+        updateQuery += 'latitude = ?, ';
+        params.push(deviceLatitude);
+      }
+
+      if (longitude !== undefined) {
+        updateQuery += 'longitude = ?, ';
+        params.push(deviceLongitude);
+      }
+
+      // Remove the last comma and space
+      updateQuery = updateQuery.slice(0, -2);
+      updateQuery += ' WHERE deviceId = ?';
+      params.push(deviceId);
+
+      db.run(updateQuery, params, function(err) {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+        res.json({ message: 'Device updated successfully' });
+      });
+    } else {
+      // If deviceId does not exist, insert a new record
+      db.run(
+        'INSERT INTO devices (deviceId, status, latitude, longitude) VALUES (?, ?, ?, ?)',
+        [deviceId, deviceStatus, deviceLatitude, deviceLongitude],
+        (err) => {
+          if (err) {
+            return res.status(500).json({ error: 'Failed to register device' });
+          }
+          res.status(201).json({ message: 'Device registered successfully' });
+        }
+      );
+    }
+  });
 });
+
 
 // Get all devices or a specific device by deviceId
 router.get('/devices', (req, res) => {
