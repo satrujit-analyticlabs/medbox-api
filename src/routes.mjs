@@ -49,7 +49,7 @@ router.post('/devices', (req, res) => {
   }
 
   // Set default values for optional fields
-  const deviceStatus = validStatus ? status : 1; // Default status is 1 if not provided or invalid
+  const deviceStatus = validStatus ? status : 0; // Default status is 1 if not provided or invalid
   const deviceLatitude = latitude !== undefined ? latitude : null; // Default is null if not provided
   const deviceLongitude = longitude !== undefined ? longitude : null; // Default is null if not provided
 
