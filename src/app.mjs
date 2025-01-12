@@ -3,6 +3,8 @@ import bodyParser from 'body-parser';
 import router from './routes.mjs';
 const app = express();
 
+app.use(cors());
+
 app.use(bodyParser.json());
 app.use('/api', router);
 
